@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+
+    // =========================
+    // File Layout
+    // =========================
+    "rootDir": ".",
+    "outDir": "./dist",
+
+    // =========================
+    // Environment Settings
+    // =========================
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "esModuleInterop": true,
+
+    // =========================
+    // Other Outputs
+    // =========================
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // =========================
+    // Stricter Typechecking Options
+    // =========================
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // =========================
+    // Recommended Options
+    // =========================
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  "include": ["src", "prisma"],
+  "exclude": ["src/**/__tests__/**", "src/tests/**"]
+}
