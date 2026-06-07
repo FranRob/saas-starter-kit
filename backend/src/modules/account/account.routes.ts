@@ -4,7 +4,7 @@ import { authenticated } from "../../middleware/auth.middleware.js";
 import { updateProfileSchema, changePasswordSchema } from "./account.validators.js";
 import * as accountService from "./account.service.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 // GET /api/account
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {

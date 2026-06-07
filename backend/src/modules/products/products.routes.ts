@@ -8,7 +8,7 @@ import {
 } from "./products.validators.js";
 import * as productsService from "./products.service.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 // GET /api/products
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {

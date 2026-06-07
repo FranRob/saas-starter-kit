@@ -16,7 +16,7 @@ import { hashToken, generateRefreshToken, signToken, type JwtPayload, type UserR
 import { env } from "../../lib/env.js";
 import { findRefreshToken, deleteRefreshToken, createRefreshToken } from "./auth.repository.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 const RT_COOKIE = "__rt";
 

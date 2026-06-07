@@ -4,7 +4,7 @@ import { authenticated } from "../../middleware/auth.middleware.js";
 import { z } from "zod";
 import * as notificationsService from "./notifications.service.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 const notificationIdSchema = z.object({ id: z.string().uuid() });
 

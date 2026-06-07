@@ -8,7 +8,7 @@ import {
 } from "./contacts.validators.js";
 import * as contactsService from "./contacts.service.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 // GET /api/contacts
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {

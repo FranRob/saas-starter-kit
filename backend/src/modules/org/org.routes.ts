@@ -4,7 +4,7 @@ import { authenticated, authenticatedOwner } from "../../middleware/auth.middlew
 import { updateOrgSchema } from "./org.validators.js";
 import * as orgService from "./org.service.js";
 
-const router = Router();
+const router: ReturnType<typeof Router> = Router();
 
 // GET /api/org
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {

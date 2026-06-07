@@ -17,7 +17,7 @@ import { productsRouter } from "./modules/products/products.routes.js";
 import { notificationsRouter } from "./modules/notifications/notifications.routes.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes.js";
 
-const app = express();
+const app: express.Application = express();
 
 // 1. Request ID
 app.use((_req, res, next) => {
