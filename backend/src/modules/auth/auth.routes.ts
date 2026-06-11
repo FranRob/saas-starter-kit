@@ -14,7 +14,8 @@ import { authenticated, requirePending2FA } from "../../middleware/auth.middlewa
 import { blacklistToken } from "../../lib/tokenBlacklist.js";
 import { hashToken, generateRefreshToken, signToken, type JwtPayload, type UserRole } from "../../lib/jwt.js";
 import { env } from "../../lib/env.js";
-import { findRefreshToken, deleteRefreshToken, createRefreshToken } from "./auth.repository.js";
+import { findRefreshToken, deleteRefreshToken, createRefreshToken, findEmailVerification, deleteEmailVerification, setEmailVerified } from "./auth.repository.js";
+import { logAudit } from "../../lib/audit.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -136,6 +137,8 @@ router.post("/logout", ...authenticated, async (req: Request, res: Response, nex
       });
     }
 
+    await logAudit({ action: "LOGOUT", entity: "User", entityId: req.user!.sub, userId: req.user!.sub, tenantId: req.tenantId! });
+
     res.clearCookie(RT_COOKIE, { path: "/" });
     res.status(204).send();
   } catch (err) {
@@ -248,5 +251,26 @@ router.post(
     }
   },
 );
+
+// GET /api/auth/verify-email/:token
+router.get("/verify-email/:token", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.params["token"] as string;
+    const tokenHash = hashToken(token);
+    const record = await findEmailVerification(tokenHash);
+
+    if (!record || record.expiresAt < new Date()) {
+      res.status(400).json({ error: { code: "INVALID_TOKEN", message: "Verification token is invalid or expired" } });
+      return;
+    }
+
+    await setEmailVerified(record.user.id);
+    await deleteEmailVerification(record.id);
+
+    res.json({ data: { message: "Email verified" } });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export { router as authRouter };

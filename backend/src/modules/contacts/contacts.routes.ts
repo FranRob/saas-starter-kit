@@ -13,8 +13,11 @@ const router: ReturnType<typeof Router> = Router();
 // GET /api/contacts
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const contacts = await contactsService.listContacts(req.tenantId!);
-    res.json({ data: contacts });
+    const search = req.query.search as string | undefined;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 10;
+    const { contacts, total } = await contactsService.listContacts(req.tenantId!, { search, page, pageSize });
+    res.json({ data: contacts, total, page, pageSize, totalPages: Math.ceil(total / pageSize) });
   } catch (err) {
     next(err);
   }
@@ -35,7 +38,7 @@ router.get("/:id", ...authenticated, async (req: Request, res: Response, next: N
 router.post("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = createContactSchema.parse(req.body);
-    const contact = await contactsService.createContact(req.tenantId!, data);
+    const contact = await contactsService.createContact(req.tenantId!, data, req.user?.sub);
     res.status(201).json({ data: contact });
   } catch (err) {
     next(err);
@@ -58,7 +61,7 @@ router.put("/:id", ...authenticated, async (req: Request, res: Response, next: N
 router.delete("/:id", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = contactIdSchema.parse(req.params);
-    await contactsService.deleteContact(id, req.tenantId!);
+    await contactsService.deleteContact(id, req.tenantId!, req.user?.sub);
     res.status(204).send();
   } catch (err) {
     next(err);

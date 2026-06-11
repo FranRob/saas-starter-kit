@@ -13,6 +13,7 @@ import { AppError, ConflictError, UnauthorizedError, NotFoundError } from "../..
 import { env } from "../../lib/env.js";
 import { sendEmail } from "../../lib/mailer.js";
 import * as repo from "./auth.repository.js";
+import { logAudit } from "../../lib/audit.js";
 
 const INVALID = new UnauthorizedError("INVALID_CREDENTIALS", "Invalid email or password");
 
@@ -60,6 +61,21 @@ export async function register(data: {
 
   const owner = tenant.users[0];
   if (!owner) throw new AppError(500, "INTERNAL_ERROR", "Failed to create user");
+
+  const rawVerifyToken = crypto.randomBytes(32).toString("hex");
+  const verifyTokenHash = hashToken(rawVerifyToken);
+  const verifyExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await repo.createEmailVerification(owner.id, verifyTokenHash, verifyExpiresAt);
+  const verifyUrl = `${env.FRONTEND_URL}/verify-email?token=${rawVerifyToken}`;
+  await sendEmail({
+    to: owner.email,
+    subject: "Verify your email address",
+    html: `
+      <p>Please verify your email address.</p>
+      <p><a href="${verifyUrl}">Verify email</a></p>
+      <p>This link expires in 24 hours.</p>
+    `,
+  }).catch(() => {});
 
   const payload: JwtPayload = {
     sub: owner.id,
@@ -116,6 +132,8 @@ export async function login(email: string, password: string): Promise<LoginResul
   const accessToken = signToken(payload);
   const rawRefreshToken = generateRefreshToken();
   await repo.createRefreshToken(user.id, user.tenantId, hashToken(rawRefreshToken), refreshTokenExpiresAt());
+
+  await logAudit({ action: "LOGIN", entity: "User", entityId: user.id, userId: user.id, tenantId: user.tenantId });
 
   return {
     accessToken,

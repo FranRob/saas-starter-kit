@@ -140,3 +140,23 @@ export async function verify2FASecret(userId: string) {
 export async function delete2FASecret(userId: string) {
   return prisma.twoFactorSecret.deleteMany({ where: { userId } });
 }
+
+export async function createEmailVerification(userId: string, tokenHash: string, expiresAt: Date) {
+  await prisma.emailVerification.deleteMany({ where: { userId } });
+  return prisma.emailVerification.create({ data: { userId, tokenHash, expiresAt } });
+}
+
+export async function findEmailVerification(tokenHash: string) {
+  return prisma.emailVerification.findUnique({
+    where: { tokenHash },
+    include: { user: { select: { id: true, tenantId: true } } },
+  });
+}
+
+export async function deleteEmailVerification(id: string) {
+  return prisma.emailVerification.delete({ where: { id } });
+}
+
+export async function setEmailVerified(userId: string) {
+  return prisma.user.update({ where: { id: userId }, data: { emailVerified: true } });
+}

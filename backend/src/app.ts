@@ -16,8 +16,12 @@ import { contactsRouter } from "./modules/contacts/contacts.routes.js";
 import { productsRouter } from "./modules/products/products.routes.js";
 import { notificationsRouter } from "./modules/notifications/notifications.routes.js";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes.js";
+import { teamRouter } from "./modules/team/team.routes.js";
 
 const app: express.Application = express();
+
+// Trust nginx reverse proxy
+app.set("trust proxy", 1);
 
 // 1. Request ID
 app.use((_req, res, next) => {
@@ -96,6 +100,7 @@ app.use("/api/contacts", contactsRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/team", teamRouter);
 
 // 10. Error handler (must be last)
 app.use(errorHandler);

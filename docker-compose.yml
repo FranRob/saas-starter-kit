@@ -34,6 +34,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-saas}:${POSTGRES_PASSWORD:-saas}@db:5432/${POSTGRES_DB:-saas_starter}
       REDIS_URL: redis://redis:6379
+      DEMO_TENANT_ID: "00000000-0000-0000-0000-000000000001"
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +48,7 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
-        NEXT_PUBLIC_DEMO_MODE: ${NEXT_PUBLIC_DEMO_MODE:-false}
+        NEXT_PUBLIC_DEMO_MODE: ${NEXT_PUBLIC_DEMO_MODE:-true}
     restart: unless-stopped
     depends_on:
       - backend

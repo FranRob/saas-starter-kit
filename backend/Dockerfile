@@ -1,25 +1,17 @@
-FROM node:20-alpine AS base
-RUN npm install -g pnpm
-
-# Dependencies
-FROM base AS deps
+FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
-
-# Build
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
+RUN npm install
 COPY . .
-RUN pnpm prisma:generate
-RUN pnpm build
+RUN npx prisma generate
+RUN npm run build
 
-# Production
-FROM node:20-alpine AS runner
-RUN npm install -g pnpm
+# Production — use slim (Debian) for OpenSSL compatibility with Prisma
+FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
@@ -27,4 +19,4 @@ COPY --from=builder /app/prisma ./prisma
 COPY package.json ./
 
 EXPOSE 3000
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npx prisma db seed && node dist/src/server.js"]

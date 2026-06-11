@@ -1,10 +1,23 @@
 import { prisma } from "../../lib/prisma.js";
 
-export async function findAll(tenantId: string) {
-  return prisma.product.findMany({
-    where: { tenantId },
-    orderBy: { createdAt: "desc" },
-  });
+export async function findAll(
+  tenantId: string,
+  { search, page = 1, pageSize = 10 }: { search?: string; page?: number; pageSize?: number } = {},
+) {
+  const where = {
+    tenantId,
+    ...(search ? { name: { contains: search, mode: "insensitive" as const } } : {}),
+  };
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.product.count({ where }),
+  ]);
+  return { products, total };
 }
 
 export async function findById(id: string, tenantId: string) {

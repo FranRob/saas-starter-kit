@@ -1,8 +1,12 @@
 import { NotFoundError } from "../../lib/errors.js";
 import * as repo from "./products.repository.js";
+import { logAudit } from "../../lib/audit.js";
 
-export async function listProducts(tenantId: string) {
-  return repo.findAll(tenantId);
+export async function listProducts(
+  tenantId: string,
+  params: { search?: string; page?: number; pageSize?: number } = {},
+) {
+  return repo.findAll(tenantId, params);
 }
 
 export async function getProduct(id: string, tenantId: string) {
@@ -14,8 +18,11 @@ export async function getProduct(id: string, tenantId: string) {
 export async function createProduct(
   tenantId: string,
   data: { name: string; description?: string | null; price: number; stock: number },
+  userId?: string,
 ) {
-  return repo.create(tenantId, data);
+  const product = await repo.create(tenantId, data);
+  await logAudit({ action: "CREATE", entity: "Product", entityId: product.id, userId, tenantId });
+  return product;
 }
 
 export async function updateProduct(
@@ -28,8 +35,9 @@ export async function updateProduct(
   return repo.update(id, tenantId, data);
 }
 
-export async function deleteProduct(id: string, tenantId: string) {
+export async function deleteProduct(id: string, tenantId: string, userId?: string) {
   const existing = await repo.findById(id, tenantId);
   if (!existing) throw new NotFoundError("PRODUCT_NOT_FOUND", "Product not found");
   await repo.remove(id, tenantId);
+  await logAudit({ action: "DELETE", entity: "Product", entityId: id, userId, tenantId });
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  UsersRound,
   Package,
   Bell,
   Settings,
@@ -13,25 +14,32 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-const navItems = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/contacts", label: "Contacts", icon: Users },
-  { href: "/dashboard/products", label: "Products", icon: Package },
-  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+import { Link } from "@/i18n/navigation";
 
 interface SidebarProps {
   onClose?: () => void;
 }
 
 export function Sidebar({ onClose }: SidebarProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
 
+  const navItems = [
+    { href: "/dashboard", label: t("dashboard"), icon: LayoutDashboard, exact: true },
+    { href: "/dashboard/contacts", label: t("contacts"), icon: Users },
+    { href: "/dashboard/products", label: t("products"), icon: Package },
+    { href: "/dashboard/team", label: t("team"), icon: UsersRound },
+    { href: "/dashboard/notifications", label: t("notifications"), icon: Bell },
+    { href: "/dashboard/settings", label: t("settings"), icon: Settings },
+  ];
+
+  // pathname includes the locale prefix like /es/dashboard — strip it for matching
+  const localePrefixRegex = /^\/[a-z]{2}(\/|$)/;
+  const pathWithoutLocale = pathname.replace(localePrefixRegex, "/");
+
   function isActive(href: string, exact?: boolean) {
-    if (exact) return pathname === href;
-    return pathname.startsWith(href);
+    if (exact) return pathWithoutLocale === href;
+    return pathWithoutLocale.startsWith(href);
   }
 
   return (

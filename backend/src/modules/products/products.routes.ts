@@ -13,8 +13,11 @@ const router: ReturnType<typeof Router> = Router();
 // GET /api/products
 router.get("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const products = await productsService.listProducts(req.tenantId!);
-    res.json({ data: products });
+    const search = req.query.search as string | undefined;
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 10;
+    const { products, total } = await productsService.listProducts(req.tenantId!, { search, page, pageSize });
+    res.json({ data: products, total, page, pageSize, totalPages: Math.ceil(total / pageSize) });
   } catch (err) {
     next(err);
   }
@@ -35,7 +38,7 @@ router.get("/:id", ...authenticated, async (req: Request, res: Response, next: N
 router.post("/", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = createProductSchema.parse(req.body);
-    const product = await productsService.createProduct(req.tenantId!, data);
+    const product = await productsService.createProduct(req.tenantId!, data, req.user?.sub);
     res.status(201).json({ data: product });
   } catch (err) {
     next(err);
@@ -58,7 +61,7 @@ router.put("/:id", ...authenticated, async (req: Request, res: Response, next: N
 router.delete("/:id", ...authenticated, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = productIdSchema.parse(req.params);
-    await productsService.deleteProduct(id, req.tenantId!);
+    await productsService.deleteProduct(id, req.tenantId!, req.user?.sub);
     res.status(204).send();
   } catch (err) {
     next(err);

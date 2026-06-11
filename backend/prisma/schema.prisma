@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -20,24 +21,27 @@ model Tenant {
   products      Product[]
   notifications Notification[]
   auditLogs     AuditLog[]
+  invitations   Invitation[]
 }
 
 // User with roles
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  passwordHash    String
-  name            String
-  role            UserRole         @default(MEMBER)
-  isActive        Boolean          @default(true)
-  twoFactorSecret TwoFactorSecret?
-  tenantId        String
-  tenant          Tenant           @relation(fields: [tenantId], references: [id])
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  auditLogs       AuditLog[]
-  refreshTokens   RefreshToken[]
-  passwordResets  PasswordReset[]
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  passwordHash       String
+  name               String
+  role               UserRole            @default(MEMBER)
+  isActive           Boolean             @default(true)
+  emailVerified      Boolean             @default(false)
+  twoFactorSecret    TwoFactorSecret?
+  tenantId           String
+  tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  auditLogs          AuditLog[]
+  refreshTokens      RefreshToken[]
+  passwordResets     PasswordReset[]
+  emailVerification  EmailVerification?
 }
 
 enum UserRole {
@@ -118,5 +122,26 @@ model AuditLog {
   user      User?    @relation(fields: [userId], references: [id])
   tenantId  String
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Invitation {
+  id         String    @id @default(uuid())
+  email      String
+  role       UserRole  @default(MEMBER)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  tenantId   String
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }
