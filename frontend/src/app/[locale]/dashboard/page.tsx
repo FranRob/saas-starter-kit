@@ -1,5 +1,6 @@
 "use client";
 
+import type { ElementType } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Users, Package, Bell, UserCheck } from "lucide-react";
@@ -44,7 +45,7 @@ function StatCard({
 }: {
   title: string;
   value?: number;
-  icon: React.ElementType;
+  icon: ElementType;
   loading: boolean;
 }) {
   return (
@@ -73,7 +74,7 @@ export default function DashboardOverview() {
     queryKey: ["dashboard"],
     queryFn: async () => {
       const response = await api.get("/dashboard");
-      return response.data;
+      return response.data.data;
     },
   });
 

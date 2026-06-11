@@ -17,7 +17,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import api from "@/lib/api";
 
 interface InviteDetails {
-  organizationName: string;
+  tenantName: string;
   email: string;
   role: "ADMIN" | "MEMBER";
 }
@@ -161,7 +161,7 @@ function AcceptInviteContent() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {t("joinTitle", { org: invite?.organizationName ?? "" })}
+              {t("joinTitle", { org: invite?.tenantName ?? "" })}
             </CardTitle>
             <CardDescription>
               {t("joinDescription", {

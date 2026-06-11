@@ -34,6 +34,16 @@ router.post('/invite', ...authenticatedAdmin, async (req: Request, res: Response
   }
 })
 
+// GET /api/team/invites — pending invitations (admin+)
+router.get('/invites', ...authenticatedAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const invites = await teamService.getPendingInvitations(req.tenantId!)
+    res.json({ data: invites })
+  } catch (err) {
+    next(err)
+  }
+})
+
 // GET /api/team/invite/:token — public
 router.get('/invite/:token', async (req: Request, res: Response, next: NextFunction) => {
   try {

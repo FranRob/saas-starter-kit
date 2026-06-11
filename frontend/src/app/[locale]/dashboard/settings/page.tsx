@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -165,6 +165,15 @@ function TwoFactorTab() {
   const [qrUri, setQrUri] = useState<string | null>(null);
   const [verifyCode, setVerifyCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    api.get("/auth/me")
+      .then((res) => {
+        const me = res.data.data ?? res.data;
+        setEnabled(me.twoFaEnabled ?? false);
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleEnable() {
     setIsLoading(true);

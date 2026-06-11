@@ -1,12 +1,13 @@
-import { prisma } from "../../lib/prisma.js";
+import * as repo from "./dashboard.repository.js";
 
 export async function getStats(tenantId: string) {
-  const [contacts, products, notifications_unread, users] = await Promise.all([
-    prisma.contact.count({ where: { tenantId } }),
-    prisma.product.count({ where: { tenantId } }),
-    prisma.notification.count({ where: { tenantId, read: false } }),
-    prisma.user.count({ where: { tenantId, isActive: true } }),
+  const [contacts, products, unreadNotifications, users, recentContacts] = await Promise.all([
+    repo.countContacts(tenantId),
+    repo.countProducts(tenantId),
+    repo.countUnreadNotifications(tenantId),
+    repo.countActiveUsers(tenantId),
+    repo.findRecentContacts(tenantId),
   ]);
 
-  return { contacts, products, notifications_unread, users };
+  return { contacts, products, unreadNotifications, users, recentContacts };
 }
